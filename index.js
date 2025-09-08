@@ -214,7 +214,6 @@ app.get('/gpt/:text', async (req, res) => {
         response = await callOpenAIChat({
           model: primaryModel,
           msgArray: messages,
-          temperature: 0.5,
           maxTokens: 592
         });
       } catch (err) {
@@ -226,7 +225,6 @@ app.get('/gpt/:text', async (req, res) => {
           response = await callOpenAIChat({
             model: fallbackModel,
             msgArray: messages,
-            temperature: 0.5,
             maxTokens: 592
           });
         } else {
