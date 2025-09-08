@@ -70,7 +70,6 @@ app.get('/gpt/:text', async (req, res) => {
       const response = await openai.chat.completions.create({
         model: "gpt-5",
         messages: messages,
-        temperature: 0.5,
         max_tokens: 592,
         top_p: 1,
         frequency_penalty: 0,
@@ -106,7 +105,6 @@ app.get('/gpt/:text', async (req, res) => {
         { role: "system", content: "You are a helpful Twitch Chatbot." },
         { role: "user", content: prompt }
       ],
-        temperature: 0.5,
         max_tokens: 256,
         top_p: 1,
         frequency_penalty: 0,
