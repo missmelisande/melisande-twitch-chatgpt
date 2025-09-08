@@ -14,11 +14,11 @@ const messages = [
 
 console.log("GPT_MODE is " + GPT_MODE)
 console.log("History length is " + process.env.HISTORY_LENGTH)
-console.log("OpenAI API Key:" + process.env.OPENAI_API_KEY)
 
 app.use(express.json({extended: true, limit: '1mb'}))
 
-app.all('/', (req, res) => {
+app.all('/', async (req, res) => {
+
     console.log("Just got a request!")
     res.send('Yo!')
 })
@@ -47,13 +47,9 @@ app.get('/gpt/:text', async (req, res) => {
     //The agent should recieve Username:Message in the text to identify conversations with different users in his history. 
     
     const text = req.params.text
-    const { Configuration, OpenAIApi } = require("openai");
+    const OpenAI = require('openai');
 
-    const configuration = new Configuration({
-      apiKey: process.env.OPENAI_API_KEY,
-    });
-
-    const openai = new OpenAIApi(configuration);      
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });      
     
     if (GPT_MODE === "CHAT"){
       //CHAT MODE EXECUTION
@@ -71,8 +67,8 @@ app.get('/gpt/:text', async (req, res) => {
       console.dir(messages)
       console.log("User Input: " + text)
 
-      const response = await openai.createChatCompletion({
-        model: "gpt-4.1",
+      const response = await openai.chat.completions.create({
+        model: "gpt-5",
         messages: messages,
         temperature: 0.5,
         max_tokens: 592,
@@ -81,8 +77,8 @@ app.get('/gpt/:text', async (req, res) => {
         presence_penalty: 0,
       });
     
-      if (response.data.choices) {
-        let agent_response = response.data.choices[0].message.content
+      if (response.choices) {
+        let agent_response = response.choices[0].message.content
 
         console.log ("Agent answer: " + agent_response)
         messages.push({role: "assistant", content: agent_response})
@@ -104,17 +100,20 @@ app.get('/gpt/:text', async (req, res) => {
       const prompt = file_context + "\n\nQ:" + text + "\nA:";
       console.log("User Input: " + text)
 
-      const response = await openai.createCompletion({
-        model: "text-davinci-003",
-        prompt: prompt,
+      const response = await openai.chat.completions.create({
+        model: "gpt-5",
+        messages: [
+        { role: "system", content: "You are a helpful Twitch Chatbot." },
+        { role: "user", content: prompt }
+      ],
         temperature: 0.5,
         max_tokens: 256,
         top_p: 1,
         frequency_penalty: 0,
         presence_penalty: 0,
       });
-      if (response.data.choices) {
-        let agent_response = response.data.choices[0].text
+      if (response.choices) {
+        let agent_response = response.choices[0].message.content
           console.log ("Agent answer: " + agent_response)
           //Check for Twitch max. chat message length limit and slice if needed
           if(agent_response.length > 1000){
